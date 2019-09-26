@@ -1,0 +1,14 @@
+/* TEAM */
+Your title: CILT - LT Team
+Site: http://www.cilt.uct.ac.za/
+Repo: https://github.com/cilt-uct/lecturesight-dashboard-docker
+Location: Cape Town, South Africa
+
+/* THANKS */
+Name: https://bitbucket.org/bwulff/lecturesight/
+
+/* SITE */
+Last update: 2019/09/26
+Standards: HTML5, CSS3
+Components: Modernizr, jQuery, Bootstrap, Moment, tmpl
+Software: Software used for the monitoring of LectureSight

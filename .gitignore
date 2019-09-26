@@ -1,0 +1,13 @@
+*-overview.png
+*-status.txt
+*-metrics.json
+*-profile.scn
+/code/venues.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+.DS_Store

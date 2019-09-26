@@ -1,0 +1,343 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    background-image: linear-gradient(to left bottom, #eeeeee, #f2f2f2, #f6f6f6, #fbfbfb, #ffffff);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Avoid the IE 10-11 `min-height` bug. */
+}
+
+h1 {
+    font-size: 1.64rem;
+    font-weight: normal;
+    margin: 0 5rem 0.8rem 0;
+    line-height: 1;
+    color: #222222;
+    float: left;
+}
+
+header {
+    margin: 3rem 4rem 0rem; 
+}
+
+header nav {
+    position: relative;
+    top: -4px;
+}
+
+header nav.nav-pills a.nav-link {
+    color: #333;
+    font-size: 0.8em;
+    min-width: 2rem;
+    padding: 0.3rem 0.5rem 0.3rem 1rem;
+    background-color: transparent;
+}
+
+header nav.nav-pills a.nav-link .badge {
+    position: relative;
+    top: -2px;
+    margin-left: 0.6em;
+}
+
+header nav.nav-pills a.nav-link:hover {
+    color: #0032A4;
+    background-color: #ddd;
+}
+
+header nav.nav-pills a.nav-link.active {
+    color: #eee;
+    background-color: #0032A4;
+}
+
+header nav.nav-pills a.nav-link.active:hover {
+    color: #fff;
+    background: #007bff;
+}
+
+section {
+    margin: 2rem 4rem; 
+}
+
+img {
+    display: block;
+    width: 100%;
+}
+
+#content {
+    flex: 1 0 auto; /* Prevent Chrome, Opera, and Safari from letting these items shrink to smaller than their content's default minimum size. */
+    position: relative;
+    padding-left: 1em;
+}
+
+#content .anchor {
+    position: relative;
+    top: -20px;
+}
+
+#content > div {
+    padding-bottom: 2.4rem;
+    position: relative;
+}
+
+#content > div.empty {
+    font-size: 4rem;
+    color: #ccc;
+}
+
+#content > div.empty small {
+    font-size: 1rem;
+}
+
+#content div.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 320px);
+    grid-auto-flow: row dense;
+    grid-auto-columns: minmax(30px, 100px);
+    grid-gap: 1rem;
+
+    -o-transition: all 0.5s;
+    -moz-transition: all 0.5s;
+    -webkit-transition: all 0.5s;
+    transition: all 0.5s;
+}
+
+#content > div::before {
+    content: attr(data-ref);
+    color: #e6e6e6;
+    position: absolute;
+    z-index: 0;
+    left: -1.5rem;
+    top: -3rem;
+    font-size: 4rem;
+    font-weight: 800;
+}
+
+#content .item, 
+#imgModal .item {
+    color: #000;
+    text-decoration: none;
+    position: relative;
+
+    display: grid;
+    grid-template-columns: 3fr;
+    grid-template-rows: 2fr;
+
+    -o-transition: all 0.5s;
+    -moz-transition: all 0.5s;
+    -webkit-transition: all 0.5s;
+    transition: all 0.5s;
+    z-index: 100;
+}
+
+#content .item {
+    background-color: #000;
+    box-shadow: 3px 2px 12px rgba(0, 0, 0, 0.22);
+    border: 1px solid #eee;
+}
+
+#content .item.hidden {
+    display: none;
+}
+
+#content a.removed {
+    opacity: 0.3;
+}
+
+#content a.offline {
+    border-color: #FF002F !important;
+}
+
+#content a.offline span {
+    background-color: #F6E0E1;
+    color: #FF5474;
+}
+
+#content .item.offline span.status,
+#imgModal .item.offline span.status {
+    color: #FF5474;
+}
+
+#content a.offline .img {
+    opacity: 1.0;
+}
+
+#content a.active {
+    border-color: #00AD00 !important;
+}
+
+#content a.active span {
+    background-color: #F2FDED;
+    color: #009900;
+}
+
+#content .item.active span.status,
+#imgModal .item.active span.status {
+    color: #009900;
+}
+
+#content a.active .img {
+    opacity: 1.0;
+}
+
+#content a.sel {
+    grid-column: span 3;
+    grid-row: span 3;
+
+    opacity: 1;
+}
+
+#content a.item:hover,
+#content a.item:active {
+    border-color: #378DD4;
+    box-shadow: 3px 2px 12px rgba(0, 0, 0, 0.44);
+}
+
+#content .item > .img,
+#imgModal .item > .img {
+    grid-column-start: span 3;
+}
+
+#content .item .img > div,
+#imgModal .item .img > div {
+    position: relative;
+}
+
+#content .item .img > div::before,
+#imgModal .item .img > div::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    height: 100%;
+    background-color: rgba(255, 152, 85, 0.72); /*#FF8E00*/
+    width: 1px;
+}
+#content .item .img > div::after,
+#imgModal .item .img > div::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    height: 1px;
+    background-color: rgba(255, 152, 85, 0.72);
+    width: 100%;
+}
+
+#content .item .red,
+#imgModal .item .red,
+#content .item .red2,
+#imgModal .item .red2 {
+    border: 1px solid red;
+    width: 20px;
+    height: 20px;
+    left: 0;
+    top: 0;
+    position: absolute;
+}
+
+
+#content .item .red2,
+#imgModal .item .red2 {
+    border: 1px solid #5AB7D4;
+}
+
+#content .item span,
+#imgModal .item span {
+    background-color: #fff;
+    padding: 0.8rem;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+#content .item span.time,
+#imgModal .item span.time {
+    font-size: 66%;
+    padding-top: 1.5em;
+}
+
+#content .item span.status,
+#imgModal .item span.status {
+    color: #656576;
+    font-size: 0.9em;
+    min-width: 90px;
+    text-align: right;
+}
+
+#content .item small,
+#imgModal .item small {
+    position: absolute;
+    bottom: 62px;
+    right: 8px;
+    font-size: 72%;
+}
+
+footer {
+    background-color: #656576;
+    color: #ddd;
+    font-size: 0.76rem;
+    padding: 2em;    
+
+    flex-shrink: 0; /* Prevent Chrome, Opera, and Safari from letting these items shrink to smaller than their content's default minimum size. */
+}
+
+footer p {
+    padding: 0;
+    margin: 0;
+}
+
+aside {  
+    position: fixed;
+    width: 3em;
+    top: 6em;
+    z-index: 100;
+}
+
+aside ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+aside li {
+    position: relative;
+    margin-bottom: 0.4em;
+}
+
+aside li > a {
+    display: inline-block;
+    position: relative;
+    left: -6px;
+    color:#666;
+    background-color: #ddd;
+    border: 1px solid #ccc;
+    border-left-width: 0px;
+    border-radius: 0px 4px 4px 0px;
+    padding: 0.2em 0.6em 0.2em 0.9em;
+    box-shadow: 3px 3px 5px 0px rgba(00,00,00,0.2);
+    font-size: 1em;
+}
+
+aside li > a:hover,
+aside li > a:active {
+    color: #000;
+    text-decoration: none;
+}
+
+aside li > a:active {
+    top: 2px;
+}
+
+#imgModal.fade {
+    transition: opacity 0.02s linear;
+}
+#imgModal.fade .modal-dialog {
+    transition: -webkit-transform 0.1s ease-out;
+    transition: transform 0.1s ease-out;
+    transition: transform 0.1s ease-out, -webkit-transform 0.1s ease-out;
+    
+    -webkit-transform: translate(0, 0);
+    transform: translate(0, 0);
+}

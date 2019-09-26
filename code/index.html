@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>LectureSight - Overview</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/app.css?t=2018-02-02">
+
+    <script src="js/jquery.min.js"></script>
+  </head>
+  <body>
+
+    <header>
+        <h1 class="title">LectureSight <small>Overview</small></h1>
+
+        <nav class="nav nav-pills d-flex justify-content-start">
+            <a class="flex-sm-fill text-sm-center nav-link active" data-filter="all" href="#" id="filter-all">All <span class="badge badge-light"></span></a>
+            <a class="flex-sm-fill text-sm-center nav-link" data-filter="idle" href="#" id="filter-idle">Idle <span class="badge badge-light"></span></a>
+            <a class="flex-sm-fill text-sm-center nav-link" data-filter="active" href="#" id="filter-active">Active <span class="badge badge-light"></span></a>
+            <a class="flex-sm-fill text-sm-center nav-link" data-filter="offline" href="#" id="filter-offline">Offline <span class="badge badge-light"></span></a>
+        </nav>
+    </header>
+
+    <aside id="nav-side"></aside>
+    <section id="content"></section>
+
+    <!-- Modal -->
+    <div class="modal fade" id="imgModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imgModal-title">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="item"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="d-flex justify-content-center">
+        <p>&copy; University of Cape Town 2017. All rights reserved.</p>
+    </footer>
+
+    <script src="js/tmpl.min.js"></script>
+    <script src="js/moment.min.js"></script>
+    <script src="js/jquery.observable.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        var venues = {list: [], ref: [], items: [], old: []},
+            draw_timer_id = null, draw_delay = 200,
+            update_timer_id = null, update_delay = 60000; // 60 sec
+
+        function getObj(id, arr, key) { key = key || 'id'; var o = null; $.each(arr, function (i, el) { if (el[key] == id) { o=el; return; } }); return o; };
+        function setTimer(id, delay, func, action) {
+            action = action || 'Timeout';
+            if (id !== null) {
+                window['clear'+ action] (id);
+            }
+            return window['set'+ action] (func, delay);
+        }
+        jQuery.fn.exists = function(){ return this.length > 0; }
+        jQuery.extend({
+            diff: function (arrayA, arrayB) {
+                var a = jQuery.extend(true, [], arrayA);
+                var b = jQuery.extend(true, [], arrayB);
+                var d = [];
+
+                for (var i = 0, l = a.length; i < l; i++) {
+                    var found = false;
+                    for (var j = 0, k = b.length; j < k; j++) {
+                        found = found || (a[i].id === b[j].id);
+                    }
+                    if (!found) {
+                        d.push(a[i].id);
+                    }
+                }
+                return d;
+            }
+        });
+        function getItemStatus(o) {
+            var a = moment(), b = moment(o.updated);
+            return  a.diff(b, 'minutes', true) > 5 ? 'offline' : o.status;
+        }
+
+        Object.filter = (obj, predicate) =>
+            Object.keys(obj)
+                .filter( key => predicate(obj[key]) )
+                .reduce( (res, key) => Object.assign(res, { [key]: obj[key] }), {} );
+
+        function draw() {
+            //console.log('draw');
+
+            // save to redraw
+            $('#nav-side').html(tmpl('tmpl-nav', venues));
+            $('#content .empty').remove();
+
+            if ($('#content').children().length === 0) {
+                // new
+                $('#content').html(tmpl('tmpl-all-items', venues));
+            } else {
+                // update - existing
+                $.each(venues.items, function(i, item){
+                    var el = $('#img-'+ item.id);
+                    if ( el.exists() ) {
+                        var a = moment(), //el.data('time')),
+                            b = moment(item.updated),
+                            status = a.diff(b, 'minutes', true) > 5 ? 'offline' : item.status;
+
+                        //console.log(item.id +' '+ a.diff(b, 'minutes', true) );
+			            el.data('time', item.updated);
+                        el.find('.thumb').attr('src', 'venues/'+ item.id +'-overview.png?t='+ Date.now()).siblings('.red').remove();
+                        el.find('.time').html(moment(item.updated).calendar());
+                        el.find('.status').html( status );
+                        el.removeClass('offline idle recording').addClass(status);
+
+
+                        var point = getCalibrationPoint(item);
+                        if (point) {
+                            el.find('.img>div').append(tmpl('tmpl-target', point));
+                        }
+                    } else {
+                      if ( $('#gallery-'+ item.ref).exists() ){
+                          // our container exists but we don't
+                          $('#gallery-'+ item.ref +' .grid').append( tmpl('tmpl-item', item) );
+                      }
+                    }
+                });
+
+                // $.diff(venues.items, venues.old) added items
+                var removed = $.diff(venues.old, venues.items) // removed items
+                //console.log(removed);
+                $.each(removed, function(i, item){
+                    var el = $('#img-'+ item);
+                    if ( el.exists() ) {
+                        el.addClass('removed');
+                        el.find('.status').html('-');
+                    }
+                });
+
+                // added new venue group
+                $.each(venues.ref, function(i, ref){
+                    var el = $('#gallery-'+ ref);
+                    if (!el.exists() ) {
+                        var filtered = $.map(venues.items, function(i, e) { if (i.ref == ref) return i; });
+                        $('#content').append( tmpl('tmpl-group-items', {ref: ref, list: filtered}) );
+                        el = $('#gallery-'+ ref);
+                    }
+
+                    // sort items in groups
+                    el.find('.grid > a').sort(function(a, b) {
+                        return $(b).data('ref') < $(a).data('ref');
+                    }).appendTo('#gallery-'+ ref +' .grid');
+                });
+
+                // sort groups
+                $('#content > div').sort(function(a, b) {
+                    return $(b).data('ref') < $(a).data('ref');
+                }).appendTo('#content');
+            }
+
+            $.each(['all','idle', 'active', 'offline'], function(i, el){
+                $('#filter-'+ el +' > span').html($('#content .item'+ (el != 'all' ? '.'+el : '')).length);
+            });
+        }
+
+        function getCalibrationPoint(item) {
+            var cal = Array.isArray(item.profile) ? item.profile.filter(function(el){ return $.inArray("CALIBRATION", el) >= 0 ? el : null; }) : [];
+            var size = Array.isArray(item.profile) ? item.profile.filter(function(el){ return $.inArray("SIZE", el) >= 0 ? el : null; }) : [];
+            var result = [];
+
+            if ((cal.length >= 1) && (size.length >= 1)) {
+                size = size[0];
+
+                if (size.length === 6) {
+                    $.each(cal, function(i, el){
+                        if (el.length === 6) {
+                            result.push({ name: el[1],
+                                x: parseInt(el[2], 10) / parseInt(size[4], 10) * 100,
+                                y: parseInt(el[3], 10) / parseInt(size[5], 10) * 100,
+                                w: parseInt(el[4], 10) / parseInt(size[4], 10) * 100,
+                                h: parseInt(el[5], 10) / parseInt(size[5], 10) * 100
+                            });
+                        }
+                    });
+                }
+            }
+            //console.log(result);
+
+            return result;
+        }
+
+        function getStatus(file) {
+            file = file || 'venues.json';
+
+            $.getJSON(file +'?t=' + Date.now(), function( data ) {
+
+                var ordered = {}, diff = null;
+                Object.keys(data).sort().forEach(function(key) {
+                    ordered[key] = data[key];
+                });
+
+                $.observable(venues.ref).refresh([]);
+                $.observable(venues.old).refresh(venues.items);
+                $.observable(venues.items).refresh([]);
+                $.each(ordered, function(i, el) {
+                    var ref = i.substring(0,1);
+
+                    if (diff != ref) {
+                        $.observable(venues.ref).insert(ref);
+                        diff = ref;
+                    }
+
+                    $.observable(venues.items).insert({id: i, ref: ref, status: el[1], profile: '', updated: el[0]});
+
+                    $.get('venues/'+i +'-profile.scn?t=' + Date.now(), function(data) {
+                        var raw = data.replace( /\n/g, '|' ).split('|'),
+                            o = getObj(i, venues.items);
+
+                        $.observable(o).setProperty('profile',
+                            raw.map(function(tar, j) {
+                                return tar.replace(/\t/g, ' ').split(' ');
+                            }).filter(function(el) {
+                                return el.length === 6; // Only return valid arrays
+                            })
+                        );
+                    }, 'text');
+                });
+
+                $.observable(venues.ref).refresh(venues.ref.sort());
+                $.observable(venues).setProperty('list', ordered);
+            }).error(function() { $('#content').html(tmpl('tmpl-all-items', venues)); });
+        }
+
+        function showModal(o) {
+
+            $('#imgModal-title').html('View - '+ o.id);
+            $('#imgModal .modal-body > .item').removeClass('offline active removed')
+                .addClass(getItemStatus(o))
+                .html( tmpl('tmpl-item-internal', o) );
+            $('#imgModal [data-toggle="tooltip"]').tooltip();
+            $('#imgModal').modal('show');
+        }
+
+        $(document).ready(function(){
+
+            var ov = $.observable(venues);
+            $.observe(venues, 'items.**', function(event){
+                //console.log(event.type);
+
+                draw_timer_id = setTimer(draw_timer_id, draw_delay, draw);
+            });
+
+            getStatus();
+            update_timer_id = setInterval(getStatus, update_delay);
+
+            $('#content').on('click', 'a', function(event){
+                event.preventDefault();
+
+                showModal( getObj($(this).data('ref'), venues.items) );
+            });
+
+            $('header > nav > a').on('click', function(event){
+                var value = $(this).attr('data-filter');
+
+                if(value == 'all') {
+                    $('#content .item').removeClass('hidden');
+                } else {
+                    $('#content .item').not('.'+value).addClass('hidden');
+                    $('#content .item').filter('.'+value).removeClass('hidden');
+                }
+                $('header > nav > a').removeClass('active');
+                $(this).addClass('active');
+
+                $('#content > div:not(.empty)').each(function(i, el){
+                    var side = $('#nav-side a[ref='+ $(el).data('ref').toString().toLowerCase() +']');
+
+                    if ($(el).find('.item').length === $(el).find('.hidden').length) {
+                        $(el).hide();
+                        side.hide();
+                    } else {
+                        $(el).show();
+                        side.show();
+                    }
+                });
+
+                if ($('#content > div:not(.empty):visible').length == 0) {
+                    $('#content .empty').show();
+                } else {
+                    $('#content .empty').hide();
+                }
+            });
+        });
+    </script>
+    <!-- Templates -->
+    <script type="text/x-tmpl" id="tmpl-all-items">
+        {% if (o.ref.length > 0 ) {
+            $.each(o.ref, function( i, v ) {
+                var filtered = $.map(o.items, function(i, e) { if (i.ref == v) return i; });
+                include('tmpl-group-items', {ref: v, list: filtered});
+            });
+            %}<div class="empty" style="display:none;">No venues <small>change the filters see matching venues</small></div>{%
+        } else { %}<div class="empty">No venues <small>refer to readme for setup instructions</small></div>{% } %}
+    </script>
+    <script type="text/x-tmpl" id="tmpl-group-items">
+        <div id="gallery-{%=o.ref%}" data-ref="{%=o.ref.toUpperCase()%}"><a name="{%=o.ref%}" class="anchor"></a><div class="grid">
+        {%  $.each(o.list, function( j, item ) {
+                if (typeof item.id === 'string') {
+                    include('tmpl-item', item);
+                }
+            }); %}
+        </div></div>
+    </script>
+    <script type="text/x-tmpl" id="tmpl-item">
+        {%
+            var status = getItemStatus(o);
+        %}
+        <a href="#" id="img-{%=o.id%}" data-ref="{%=o.id%}" data-time="{%=o.updated%}" rel="{%=o.id%}" class="item {%=status%}">
+            {% include('tmpl-item-internal', o); %}
+        </a>
+    </script>
+    <script type="text/x-tmpl" id="tmpl-item-internal">
+        {% var point = getCalibrationPoint(o);
+            var status = getItemStatus(o);
+         %}
+         <div class="img">
+            <div>
+            <img src="venues/{%=o.id%}-overview.png?t={%=Date.now()%}" alt="" class="thumb" />
+            {% include('tmpl-target', point); %}
+            </div>
+        </div>
+        <span class="text">{%=o.id%}</span>
+        <span class="time">{%=moment(o.updated).calendar()%}</span>
+        <span class="status {%=status%}">{%=status%}</span>
+    </script>
+    <script type="text/x-tmpl" id="tmpl-target">
+        {% $.each(o, function( i, v ) { %}
+        <div data-toggle="tooltip" data-placement="top" title="{%=v.name%}" class="{%=(v.name == 'lectern' ? 'red' : 'red2')%}" style="width:{%=v.w%}%; height:{%=v.h%}%; top:{%=v.y%}%; left:{%=v.x%}%;"></div>
+        {% }); %}
+    </script>
+
+    <script type="text/x-tmpl" id="tmpl-nav">
+        <ul>
+        {% if (o.ref.length > 2) {
+            $.each(o.ref, function( i, v ) { %}
+            <li><a href="#{%=v%}" ref="{%=v%}">{%=v.toUpperCase()%}</a></li>
+        {% }); } %}
+        </ul>
+    </script>
+  </body>
+</html>

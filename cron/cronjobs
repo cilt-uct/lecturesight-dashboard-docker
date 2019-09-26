@@ -1,0 +1,2 @@
+* * * * * echo $(wget -q -O out.log web/status/index.php && cat out.log) 2>&1
+# remember to end this file with an empty new line
