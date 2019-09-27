@@ -1,11 +1,11 @@
 # LectureSight Dashboard
-The LectureSight dashboard repo contains a html page to display the overview of all running lecture sight applications and a index.php to receive the images from the lecture sight applications.
+The LectureSight dashboard repo contains a html page to display the overview of all running lecture sight applications and a index.php to receive the images from the LectureSight applications.
 
 The code is based on https://github.com/cilt-uct/lecturesight-dashboard and has been simplified.
 
 ## Status (/status/index.php)
 
-This file has a duel purpose in that if it receives a POST from a running Lecturesigth; it will write out the files for that lecturesight into the venues folder. Otherwise if it gets clled with a GET then it will review the venues folder and write out `venues.json` as a updated version of the current venue status. This is also what gets called by the cron image to update the venue status.
+This file has a dual purpose in that if it receives a POST from a running LectureSight, it will write out the files for that venue into the venues folder. Otherwise if it gets called with a GET then it will review the venues folder and write out `venues.json` as a updated version of the current venue status. This is also what gets called by the cron image to update the venue status.
 
 POST:
 ```
