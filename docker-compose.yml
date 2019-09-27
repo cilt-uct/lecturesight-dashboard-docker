@@ -1,5 +1,6 @@
 web:
     image: nginx:latest
+    restart: always
     ports:
         - "5000:80"
     volumes:
@@ -11,11 +12,13 @@ web:
 
 php:
     image: php:7-fpm
+    restart: always
     volumes:
         - ./code:/code
 
 cron:
     build: ./cron
+    restart: always
     volumes:
         - ./code:/code
     links:
