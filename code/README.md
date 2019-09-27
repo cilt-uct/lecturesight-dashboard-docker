@@ -1,5 +1,5 @@
 # LectureSight Dashboard
-The LectureSight dashboard repo contains a html page to display the overview of all running lecture sight applications and a index.php to receive the images from the LectureSight applications.
+The LectureSight dashboard repo contains an html page to display the overview images from all running LectureSight applications and an index.php to receive the images from the LectureSight applications.
 
 The code is based on https://github.com/cilt-uct/lecturesight-dashboard and has been simplified.
 
