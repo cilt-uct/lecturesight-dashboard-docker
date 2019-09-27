@@ -55,7 +55,7 @@ if ($method == 'POST') {
         echo "File is valid, and was successfully uploaded.\n";
     } else {
         http_response_code(500);
-        echo "Upload failed";
+        echo "Upload failed.";
     }
 } else {
     date_default_timezone_set('Africa/Johannesburg');

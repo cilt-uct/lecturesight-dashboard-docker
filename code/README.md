@@ -1,3 +1,41 @@
-The LectureSight overview repo contains a html page to display the overview of all running lecture sight applications and a index.php to receive the images from the lecture sight applications.
+# LectureSight Dashboard
+The LectureSight dashboard repo contains a html page to display the overview of all running lecture sight applications and a index.php to receive the images from the lecture sight applications.
 
-REPO: https://github.com/cilt-uct/lecturesight-dashboard
+The code is based on https://github.com/cilt-uct/lecturesight-dashboard and has been simplified.
+
+## Status (/status/index.php)
+
+This file has a duel purpose in that if it receives a POST from a running Lecturesigth; it will write out the files for that lecturesight into the venues folder. Otherwise if it gets clled with a GET then it will review the venues folder and write out `venues.json` as a updated version of the current venue status. This is also what gets called by the cron image to update the venue status.
+
+POST:
+```
+POST /status/index.php
+Header:
+    Content-Type: multipart/form-data
+Body:
+    overview-image [FILE] : Binary data of PNG that contains the overview image
+    name    [TEXT] : name of the lecturesight venue
+    profile [TEXT] : Actual profile of the configuration of this lecturesight (text/plain)
+    status  [TEXT] : Status text (idle/active)
+    metrics [TEXT] : Metrics coinfiguration file for the lecturesight (application/json)
+```
+
+Response:
+```
+HTTP/1.1 200 OK
+File is valid, and was successfully uploaded.
+```
+```
+HTTP/1.1 500 OK
+Upload failed.
+```
+
+GET:
+```
+GET /status/index.php
+```
+Response:
+```
+HTTP/1.1 200 OK
+1
+```
