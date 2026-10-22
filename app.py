@@ -133,6 +133,8 @@ def status():
             if png.width * png.height > 16_000_000:
                 abort(400, "Image dimensions are too large.")
             png.verify()
+        with Image.open(io.BytesIO(image), formats=["PNG"]) as png:
+            png.load()
     except (UnidentifiedImageError, OSError, SyntaxError, ValueError, Image.DecompressionBombError):
         abort(400, "Expected a valid PNG image.")
     files["overview.png"] = image
