@@ -8,8 +8,9 @@ from unittest.mock import patch
 
 from PIL import Image
 from werkzeug.datastructures import MultiDict
+from werkzeug.exceptions import NotFound
 
-from app import app, write_file
+from app import app, venue_path, write_file
 
 
 def png_bytes(size=(1, 1)):
@@ -160,6 +161,19 @@ class DashboardTest(unittest.TestCase):
             "/js/../venues/A-status.txt", "/css/%2e%2e/README.md", "/.env",
         ):
             self.assertEqual(self.client.get(route).status_code, 404, route)
+
+    def test_venue_path_defense_in_depth(self):
+        for filename in ("../A-status.txt", "/tmp/A-status.txt", "x/../A-status.txt", "x.py"):
+            with self.subTest(filename=filename), self.assertRaises(NotFound):
+                venue_path(filename)
+        self.assertEqual(venue_path("A-status.txt"), self.path / "A-status.txt")
+
+    def test_prototype_name_is_preserved_as_data(self):
+        self.assertEqual(self.post({"name": "__proto__"}).status_code, 200)
+        self.assertEqual(self.client.get("/api/").json[0]["name"], "__proto__")
+        self.assertEqual(
+            self.client.get("/venues.json").json["__proto__"][1], "active"
+        )
 
     def test_legacy_data_is_filtered_and_sorted(self):
         for name, status in (

@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 
 from flask import Flask, abort, jsonify, request, send_from_directory
 from PIL import Image, UnidentifiedImageError
+from werkzeug.security import safe_join
 
 CODE_DIR = Path(__file__).parent / "code"
 NAME = re.compile(r"[A-Za-z0-9_-]{1,30}")
@@ -28,7 +29,10 @@ app.config.update(
 
 
 def venue_path(filename):
-    path = Path(app.config["VENUES_DIR"]) / filename
+    joined = safe_join(str(app.config["VENUES_DIR"]), filename)
+    if joined is None or not VENUE_FILE.fullmatch(filename):
+        abort(404)
+    path = Path(joined)
     if path.is_symlink():
         abort(404)
     return path
@@ -155,8 +159,6 @@ def venues_json():
 
 @app.get("/venues/<filename>")
 def venue_file(filename):
-    if not VENUE_FILE.fullmatch(filename):
-        abort(404)
     path = venue_path(filename)
     response = send_from_directory(path.parent, path.name)
     response.headers["Content-Security-Policy"] = "default-src 'none'; sandbox"
