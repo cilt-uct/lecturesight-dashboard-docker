@@ -140,8 +140,9 @@ def status():
     files["overview.png"] = image
 
     # Validate every input before writing any venue data; ignore uploaded filenames.
-    for suffix, data in files.items():
-        write_file(venue_path(f"{name}-{suffix}"), data)
+    destinations = [(venue_path(f"{name}-{suffix}"), data) for suffix, data in files.items()]
+    for path, data in destinations:
+        write_file(path, data)
     return "File is valid, and was successfully uploaded.\n"
 
 
