@@ -85,7 +85,7 @@ def storage_error(error):
 @app.route("/status/", methods=["GET", "POST"])
 @app.route("/status/index.php", methods=["GET", "POST"])
 def status():
-    if request.method == "GET":
+    if request.method in {"GET", "HEAD"}:
         # venues.json is now generated on demand; legacy cron calls remain valid.
         return "1"
 
