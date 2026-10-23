@@ -13,11 +13,11 @@ Pillow validates PNG uploads. These are the only direct dependencies, pinned in
 Requires Docker with Compose v2.
 
 1. Clone the repository and enter its directory.
-2. Make the persistent venue directory writable by the container's UID/GID 10001.
+2. Make the persistent venue directory writable by the container's UID/GID 33.
    For an existing installation, back up this directory first; its files are reused.
 
 ```sh
-sudo chown -R 10001:10001 code/venues
+sudo chown -R 33:33 code/venues
 sudo chmod -R u+rwX code/venues
 bash start.sh
 ```
@@ -34,6 +34,35 @@ bash start.sh
 is mounted writable; application code is baked into the image and requires a rebuild
 after changes. Old `code/venues.json` files are no longer used.
 
+### Troubleshooting storage permissions
+
+If uploads fail with `Permission denied: '/app/code/venues/tmp...'`, check the
+running identity and bind-mount directory:
+
+```sh
+sudo docker compose exec web id
+stat -c '%a %u:%g %n' code/venues
+```
+
+The container should report UID/GID `33:33`, and that identity needs write and
+execute permission on the directory, not just write permission on existing files:
+uploads create a temporary file there and atomically replace the destination.
+The bind mount hides the directory ownership set during the image build.
+After backing up existing venue data, apply the ownership and permission commands
+in the install steps above, then rebuild and recreate the service:
+
+```sh
+sudo chown -R 33:33 code/venues
+sudo chmod -R u+rwX code/venues
+
+sudo docker compose up -d --build --force-recreate web
+sudo docker compose logs --tail=50 web
+```
+
+Recreating is necessary after changing the image's `USER`; restarting an existing
+container does not apply it. Do not remove `read_only` or run the service as root
+to work around venue permissions.
+
 ## Security
 
 Uploads require a venue name of 1–30 ASCII letters, digits, underscores or hyphens,
@@ -41,7 +70,9 @@ a valid PNG (maximum 16 million pixels), and at most 8 MiB per request.
 Optional text fields are limited to 256 KiB each; status and metrics are validated
 before any files are written. Uploaded filenames are ignored, writes use atomic
 replacement, and only known venue file types and dashboard assets are served.
-The container runs as UID/GID 10001 with a read-only root filesystem and no capabilities.
+The container runs as UID/GID 33 with a read-only root filesystem and no capabilities.
+Gunicorn's optional control socket is disabled so it does not try to create
+`$HOME/.gunicorn` on that filesystem. Worker temporary files use writable `/tmp`.
 
 For clients that support an Authorization header, set `STATUS_TOKEN` in the
 deployment environment and use HTTP bearer authentication with every POST.

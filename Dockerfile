@@ -5,15 +5,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     TZ=Africa/Johannesburg \
     DEBIAN_FRONTEND=noninteractive \
     PIP_ROOT_USER_ACTION=ignore
-    
+
 WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py .
 COPY code/ code/
-RUN mkdir -p code/venues && chown 10001:10001 code/venues
+RUN mkdir -p code/venues && chown 33:33 code/venues
 
-USER 10001:10001
+USER 33:33
 EXPOSE 8000
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-tmp-dir", "/tmp", "--access-logfile", "-", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-tmp-dir", "/tmp", "--no-control-socket", "--access-logfile", "-", "app:app"]
