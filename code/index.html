@@ -203,7 +203,7 @@
 
             $.getJSON(file +'?t=' + Date.now(), function( data ) {
 
-                var ordered = {}, diff = null;
+                var ordered = Object.create(null), diff = null;
                 Object.keys(data).sort().forEach(function(key) {
                     ordered[key] = data[key];
                 });

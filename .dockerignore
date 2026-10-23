@@ -1,0 +1,11 @@
+**
+!app.py
+!requirements.txt
+!code/
+!code/index.html
+!code/robots.txt
+!code/humans.txt
+!code/css/
+!code/css/**
+!code/js/
+!code/js/**
